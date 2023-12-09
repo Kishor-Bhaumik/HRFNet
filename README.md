@@ -13,7 +13,12 @@ Setup: Run
 
 
 
-Step 1: To train the model with dummy dataset run   
+Step 1: To train the model  run   
+  ```shell
+  python train.py
+  ```
+
+Step 1: To test the model  run   
   ```shell
   python train.py
   ```
