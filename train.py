@@ -15,57 +15,17 @@ import torch.nn.functional as F
 from torch.utils.tensorboard import SummaryWriter
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 tb = SummaryWriter()
-
+from dataloader import CustomDataset
 set_random_seed(1221)
 
 now = datetime.datetime.now()
 filename_log = 'Results-'+str(now)+'.txt'
 
-img_shape = 1000
-# Define a custom dataset
-# Define the transformations
-transformations = transforms.Compose([
-    transforms.Resize((img_shape,img_shape )),  # Resize the image to 1000x1000
-    # Normalize using ImageNet mean and std
-    transforms.ToTensor(),
-    transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
-])
+dataset = CustomDataset('data/train.txt' )
+train_loader = DataLoader(dataset, batch_size=4, shuffle=True)
 
-class RandomImageDataset(Dataset):
-    def __init__(self, num_images, transform=None):
-        self.num_images = num_images
-        self.transform = transform
-
-    def __len__(self):
-        return self.num_images
-
-    def __getitem__(self, idx):
-        # Generate a random image (3 channels, with random values)
-        # We'll use a smaller size initially for memory efficiency
-        image = np.random.rand(224, 224, 3).astype('float32')  # Corrected shape
-        
-        # Convert numpy array to PIL Image
-        image = Image.fromarray((image * 255).astype('uint8'), 'RGB')
-        
-        if self.transform:
-            image = self.transform(image)
-        
-        # Dummy label for the sake of completeness
-        label = torch.rand(img_shape,img_shape)  #torch.tensor(0, dtype=torch.long)
-        label =  (label >= 0.5).int()
-        
-        return image, label
-
-# Create the dataset
-dataset = RandomImageDataset(num_images=100, transform=transformations)
-
-# Create the DataLoader
-dataloader = DataLoader(dataset, batch_size=4, shuffle=True)
-train_loader = dataloader
-val_loader = dataloader
-# Check out what's inside the DataLoader
-# train_features_batch, train_labels_batch = next(iter(dataloader))
-# print(train_features_batch.shape, train_labels_batch.shape)
+dataset = CustomDataset('data/valid.txt' )
+val_loader = DataLoader(dataset, batch_size=4, shuffle=True)
 
 model = HRFNet().to(device)
 optimizer = optim.Adam(model.parameters(), lr = 0.001)
